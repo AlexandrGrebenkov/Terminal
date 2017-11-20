@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74FAA9B6-D3C9-4F7B-8FEC-39B2B302ECCA}</ProjectGuid>
+    <ProjectGuid>{49931BA5-BD77-4C21-8EC4-5CBF8B7CEC79}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>BLE_SpeedTest</RootNamespace>
     <AssemblyName>BLE_SpeedTest</AssemblyName>
