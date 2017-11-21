@@ -19,7 +19,7 @@ namespace BLE_SpeedTest.Models
             set { SetProperty(ref speed, value); }
         }
 
-        public int packSize = 1024*5;
+        public int packSize = 1024 * 5;
 
         public SerialPort Port = new SerialPort();
         string name;
@@ -28,6 +28,28 @@ namespace BLE_SpeedTest.Models
             get { return name; }
             set { SetProperty(ref name, value); }
         }
+
+        int selectedIndex;
+        public int SelectedIndex
+        {
+            get { return selectedIndex; }
+            set { SetProperty(ref selectedIndex, value); }
+        }
+
+        int baudRate;
+        public int BaudRate
+        {
+            get { return baudRate; }
+            set { SetProperty(ref baudRate, value); }
+        }
+
+        int dataBits;
+        public int DataBits
+        {
+            get { return dataBits; }
+            set { SetProperty(ref dataBits, value); }
+        }
+
 
         string data;
         public string Data
@@ -66,9 +88,9 @@ namespace BLE_SpeedTest.Models
         {
             Encoding windows1251 = Encoding.GetEncoding("Windows-1251");
             Port.PortName = Name;
-            Port.BaudRate = 115200;
+            Port.BaudRate = BaudRate;
             Port.Parity = Parity.None;
-            Port.DataBits = 8;
+            Port.DataBits = DataBits;
             Port.StopBits = StopBits.One;
             Port.Handshake = Handshake.None;
             Port.Open();
@@ -83,7 +105,7 @@ namespace BLE_SpeedTest.Models
                     {
                         stop = DateTime.Now;
                         TimeSpan t = stop - start;
-                        Speed = ((double)packSize / t.Milliseconds)*1000.0/1024;
+                        Speed = ((double)packSize / t.Milliseconds) * 1000.0 / 1024;
                     }
 
                     Data += windows1251.GetString(RxData, 0, count);

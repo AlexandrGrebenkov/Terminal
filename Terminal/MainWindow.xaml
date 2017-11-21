@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:BLE_SpeedTest.ViewModels"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:cmd="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:h="clr-namespace:Helpers"
         mc:Ignorable="d"
@@ -27,15 +28,22 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <ComboBox Width="100" IsEditable="False" Margin="2" VerticalContentAlignment="Center"
-                      ItemsSource="{Binding BLE_Serial.PortNames}" SelectedItem="{Binding BLE_Serial.Name}"/>
-            <Button Content="Connect" Command="{Binding cmdConnect}"/>
-            <Button Content="Disconnect" Command="{Binding cmdDisconnect}"/>
-            <Button Content="Zeroing" Command="{Binding cmdZeroing}"/>
+                      ItemsSource="{Binding SerialPort.PortNames}" SelectedItem="{Binding SerialPort.Name}" SelectedIndex="{Binding SerialPort.SelectedIndex}"/>
+            <TextBox Width="60" Margin="2" Text="{Binding SerialPort.BaudRate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+            <ComboBox Width="40" IsEditable="False" VerticalContentAlignment="Center" Margin="2" SelectedItem="{Binding SerialPort.DataBits}" SelectedIndex="3">
+                <sys:Int32>5</sys:Int32>
+                <sys:Int32>6</sys:Int32>
+                <sys:Int32>7</sys:Int32>
+                <sys:Int32>8</sys:Int32>
+            </ComboBox>
+            <Button Content="{Binding ConnectButtonText}" Command="{Binding cmdConnect}"/>
+            
         </StackPanel>
         <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding BLE_Serial.Data}" TextWrapping="Wrap"/>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBox BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding BLE_Serial.TxData, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" >
@@ -45,7 +53,9 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </TextBox>
-            <Button Content="Send" Grid.Column="1" Command="{Binding cmdWriteText}"/>
+            
+            <Button Content="Отправить" Grid.Column="1" Command="{Binding cmdWriteText}"/>
+            <Button Content="Очистить Rx" Grid.Column="2" Command="{Binding cmdZeroing}"/>
         </Grid>
         <StackPanel Grid.Row="3" Orientation="Horizontal">
             <Button Content="1" Command="{Binding cmdWriteMacro1}"/>

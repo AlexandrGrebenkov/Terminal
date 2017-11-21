@@ -11,75 +11,94 @@ namespace BLE_SpeedTest.ViewModels
 {
     public class MainVM : BaseViewModel
     {
-        public Serial BLE_Serial { get; set; } = new Serial();
+        public Serial SerialPort { get; set; } = new Serial();
 
+        //История отправленных сообщений
         List<string> TxStack = new List<string>();
         int TxStackCounter = -1;
 
+        string connectButtonText;
+        public string ConnectButtonText
+        {
+            get { return connectButtonText; }
+            set { SetProperty(ref connectButtonText, value); }
+        }
+
         public MainVM()
         {
-            BLE_Serial.GetPortNames();
-            //Подключение
+            SerialPort.GetPortNames();
+            SerialPort.SelectedIndex = SerialPort.PortNames.Length - 1;
+            SerialPort.BaudRate = 115200;
+            //SerialPort.DataBits = 8;
+
+            ConnectButtonText = "Подключиться";
             cmdConnect = new RelayCommand(() =>
             {
-                BLE_Serial.Connect();
+                if (!SerialPort.Port.IsOpen)
+                {
+                    try { SerialPort.Connect(); ConnectButtonText = "Отключиться"; }//Подключение
+                    catch(Exception ex) {  }
+                }
+                else
+                {
+                    SerialPort.Disonnect();//Отключение
+                    ConnectButtonText = "Подключиться";
+                }
                 cmdsRaiseCanExecuteChanged();
-            }, () => !BLE_Serial.Port.IsOpen);
-            //Отключение
-            cmdDisconnect = new RelayCommand(() =>
-            {
-                BLE_Serial.Disonnect();
-                cmdsRaiseCanExecuteChanged();
-            }, () => BLE_Serial.Port.IsOpen);
+            });
+
             //Отправка из текста из TextBox
             cmdWriteText = new RelayCommand(() =>
             {
                 Write();
-            }, () => BLE_Serial.Port.IsOpen);
+            }, () => SerialPort.Port.IsOpen);
             //Макрос №1
             cmdWriteMacro1 = new RelayCommand(() =>
             {
-                byte[] buf = new byte[BLE_Serial.packSize];
+                byte[] buf = new byte[SerialPort.packSize];
                 for (int i = 0; i < buf.Length; i++)
                 {
                     buf[i] = (byte)i;
                 }
-                BLE_Serial.start = DateTime.Now;
-                BLE_Serial.Port.Write(buf, 0, buf.Length);
-            }, () => BLE_Serial.Port.IsOpen);
+                SerialPort.start = DateTime.Now;
+                SerialPort.Port.Write(buf, 0, buf.Length);
+            }, () => SerialPort.Port.IsOpen);
+            //Очистка входящего окна
             cmdZeroing = new RelayCommand(() =>
+            {
+                SerialPort.Data = String.Empty;
+                for (int i = 0; i < SerialPort.RxData.Length; i++)
                 {
-                    BLE_Serial.Data = String.Empty;
-                    for (int i = 0; i < BLE_Serial.RxData.Length; i++)
-                    {
-                        BLE_Serial.RxData[i] = 0;
-                    }
-                });
+                    SerialPort.RxData[i] = 0;
+                }
+            });
+
             cmdKeyDown = new Command<object>((a) =>
             {
-                if (BLE_Serial.Port.IsOpen)
+                var key = ((KeyEventArgs)a).Key;
+                if (SerialPort.Port.IsOpen)
                 {
-                    if (((KeyEventArgs)a).Key == Key.Enter)
+                    if (key == Key.Enter)
                     {
                         Write();
                     }
-                    if ((((KeyEventArgs)a).Key == Key.Up) |
-                        (((KeyEventArgs)a).Key == Key.Down))
+                    if ((key == Key.Up) |
+                        (key == Key.Down))
                     {
-                        if (((KeyEventArgs)a).Key == Key.Up)
+                        if (key == Key.Up)
                             TxStackCounter++;
-                        if (((KeyEventArgs)a).Key == Key.Down)
+                        if (key == Key.Down)
                             TxStackCounter--;
                         if (TxStackCounter >= TxStack.Count)
                             TxStackCounter = TxStack.Count - 1;
                         if (TxStackCounter <= -1)
                         {
                             TxStackCounter = -1;
-                            BLE_Serial.TxData = String.Empty;
+                            SerialPort.TxData = String.Empty;
                         }
                         else
                         if (TxStack.Count > 0)
-                            BLE_Serial.TxData = TxStack[TxStack.Count - TxStackCounter - 1];
+                            SerialPort.TxData = TxStack[TxStack.Count - TxStackCounter - 1];
                     }
 
                 }
@@ -87,7 +106,6 @@ namespace BLE_SpeedTest.ViewModels
         }
 
         public RelayCommand cmdConnect { get; set; }
-        public RelayCommand cmdDisconnect { get; set; }
         public RelayCommand cmdWriteText { get; set; }
         public RelayCommand cmdWriteMacro1 { get; set; }
         public RelayCommand cmdZeroing { get; set; }
@@ -96,19 +114,18 @@ namespace BLE_SpeedTest.ViewModels
         void cmdsRaiseCanExecuteChanged()
         {
             cmdConnect.RaiseCanExecuteChanged();
-            cmdDisconnect.RaiseCanExecuteChanged();
             cmdWriteText.RaiseCanExecuteChanged();
             cmdWriteMacro1.RaiseCanExecuteChanged();
         }
 
         void Write()
         {
-            if (String.Compare(BLE_Serial.TxData, "$$$") != 0)
-                BLE_Serial.Port.Write(BLE_Serial.TxData + "\n");
+            if (String.Compare(SerialPort.TxData, "$$$") != 0)
+                SerialPort.Port.Write(SerialPort.TxData + "\n");
             else
-                BLE_Serial.Port.Write(BLE_Serial.TxData);
-            TxStack.Add(BLE_Serial.TxData);
-            BLE_Serial.TxData = String.Empty;
+                SerialPort.Port.Write(SerialPort.TxData);
+            TxStack.Add(SerialPort.TxData);
+            SerialPort.TxData = String.Empty;
             TxStackCounter = -1;
         }
     }
