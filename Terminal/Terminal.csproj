@@ -7,7 +7,7 @@
     <ProjectGuid>{49931BA5-BD77-4C21-8EC4-5CBF8B7CEC79}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>BLE_SpeedTest</RootNamespace>
-    <AssemblyName>BLE_SpeedTest</AssemblyName>
+    <AssemblyName>Terminal</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -69,6 +69,7 @@
     <Compile Include="Helpers\ObservableObject.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\StringParsers.cs" />
+    <Compile Include="Models\SerialParameters.cs" />
     <Compile Include="ViewModels\MainVM.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -1,56 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Helpers;
 using System.IO.Ports;
+using System.IO;
+using System.Xml.Serialization;
 
 namespace BLE_SpeedTest.Models
 {
     public class Serial : BaseDataObject
     {
-        public DateTime start = new DateTime();
-        public DateTime stop = new DateTime();
-
-        double speed;
-        public double Speed
+        /// <summary>
+        /// Параметры COM-порта
+        /// </summary>
+        SerialParameters parameters;
+        public SerialParameters Parameters
         {
-            get { return speed; }
-            set { SetProperty(ref speed, value); }
+            get { return parameters; }
+            set { SetProperty(ref parameters, value); }
         }
 
-        public int packSize = 1024 * 5;
-
+        /// <summary>
+        /// COM-Порт
+        /// </summary>
         public SerialPort Port = new SerialPort();
-        string name;
-        public string Name
-        {
-            get { return name; }
-            set { SetProperty(ref name, value); }
-        }
-
-        int selectedIndex;
-        public int SelectedIndex
-        {
-            get { return selectedIndex; }
-            set { SetProperty(ref selectedIndex, value); }
-        }
-
-        int baudRate;
-        public int BaudRate
-        {
-            get { return baudRate; }
-            set { SetProperty(ref baudRate, value); }
-        }
-
-        int dataBits;
-        public int DataBits
-        {
-            get { return dataBits; }
-            set { SetProperty(ref dataBits, value); }
-        }
+        IAsyncResult recv_result;
 
 
+        /// <summary>
+        /// Полученные данные (Отображаемая на UI строка)
+        /// </summary>
         string data;
         public string Data
         {
@@ -72,50 +50,80 @@ namespace BLE_SpeedTest.Models
             set { SetProperty(ref rxData, value); }
         }
 
-        string[] portNames;
-        public string[] PortNames
-        {
-            get { return portNames; }
-            set { SetProperty(ref portNames, value); }
-        }
-
-        public void GetPortNames()
-        {
-            PortNames = SerialPort.GetPortNames();
-        }
         Action kickoffRead = null;
         public void Connect()
         {
-            Encoding windows1251 = Encoding.GetEncoding("ASCII");//Windows-1251
-            Port.PortName = Name;
-            Port.BaudRate = BaudRate;
-            Port.Parity = Parity.None;
-            Port.DataBits = DataBits;
-            Port.StopBits = StopBits.One;
-            Port.Handshake = Handshake.None;
+            //Настраиваем порт
+            Port.PortName = Parameters.PortName;
+            Port.BaudRate = Parameters.BaudRate;
+            Port.Parity = Parameters.Parity;
+            Port.DataBits = Parameters.DataBits;
+            Port.StopBits = Parameters.StopBits;
+            Port.Handshake = Parameters.Handshake;
+            //Открываем порт
             Port.Open();
 
-            kickoffRead = (Action)(() => Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
+            //Настраиваем приём данных
+            Encoding DataEncoder = Encoding.GetEncoding("ASCII");//Windows-1251
+            kickoffRead = (Action)(() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
             {
                 try
                 {
                     int count = Port.BaseStream.EndRead(ar);
-
-                    Data += windows1251.GetString(RxData, 0, count);
+                    Data += DataEncoder.GetString(RxData, 0, count);
                 }
                 catch (Exception exception)
                 {
-                    Data += String.Format("------Rx Exception:------ Time: {0} \r\n{1}", DateTime.Now, exception.Message);
+                    Data += String.Format("------Rx Exception:------\r\nTime: {0} \r\n{1}", DateTime.Now, exception.Message);
                 }
                 kickoffRead?.Invoke();
-            }, null)); kickoffRead?.Invoke();
-
+            }, null));
+            kickoffRead?.Invoke();
         }
 
+        /// <summary>
+        /// Отключение (Закрытие порта)
+        /// </summary>
         public void Disonnect()
         {
+            //Port.DiscardOutBuffer();
+            //Port.BaseStream.EndRead(recv_result);
             kickoffRead = null;
             Port.Close();
+        }
+
+        public void SaveParameters(SerialParameters param)
+        {
+            using (var writer = new StreamWriter("Parameters.xml"))
+            {
+                var xs = new XmlSerializer(typeof(SerialParameters));
+                xs.Serialize(writer, param);
+            }
+        }
+
+        public SerialParameters LoadParameters()
+        {
+            var param = new SerialParameters();
+            try
+            {
+                using (var reader = new StreamReader("Parameters.xml"))
+                {
+                    var xs = new XmlSerializer(typeof(SerialParameters));
+                    param = (SerialParameters)xs.Deserialize(reader);
+                }
+            }
+            catch (Exception ex)
+            {
+                param = new SerialParameters()
+                {
+                    BaudRate = 115200,
+                    DataBits = 8,
+                    Parity = Parity.None,
+                    Handshake = Handshake.None,
+                    StopBits = StopBits.One
+                };
+            }
+            return param;
         }
     }
 }

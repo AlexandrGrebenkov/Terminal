@@ -11,12 +11,35 @@ namespace BLE_SpeedTest.ViewModels
 {
     public class MainVM : BaseViewModel
     {
-        public Serial SerialPort { get; set; } = new Serial();
+        /// <summary>
+        /// Список доступных портов в системе
+        /// </summary>
+        string[] portNames;
+        public string[] PortNames
+        {
+            get { return portNames; }
+            set { SetProperty(ref portNames, value); }
+        }
+
+        /// <summary>
+        /// Выбранный порт
+        /// </summary>
+        int selectedIndex;
+        public int SelectedIndex
+        {
+            get { return selectedIndex; }
+            set { SetProperty(ref selectedIndex, value); }
+        }
+
+        public Serial COM_Port { get; set; } = new Serial();
 
         //История отправленных сообщений
         List<string> TxStack = new List<string>();
         int TxStackCounter = -1;
 
+        /// <summary>
+        /// Тест кнопки (Подключиться/Отключиться)
+        /// </summary>
         string connectButtonText;
         public string ConnectButtonText
         {
@@ -26,22 +49,31 @@ namespace BLE_SpeedTest.ViewModels
 
         public MainVM()
         {
-            SerialPort.GetPortNames();
-            SerialPort.SelectedIndex = SerialPort.PortNames.Length - 1;
-            SerialPort.BaudRate = 115200;
-            //SerialPort.DataBits = 8;
+            PortNames = SerialPort.GetPortNames(); //Получаем список доступных портов
+            SelectedIndex = PortNames.Length - 1; //Выбираем последний из них
+
+            //Устанавливаем стартовые значения параметров порта
+            COM_Port.Parameters = COM_Port.LoadParameters();
+                /*new SerialParameters()
+            {
+                BaudRate = 115200,
+                DataBits = 8,
+                Parity = Parity.None,
+                Handshake = Handshake.None,
+                StopBits = StopBits.One
+            };*/
 
             ConnectButtonText = "Подключиться";
             cmdConnect = new RelayCommand(() =>
             {
-                if (!SerialPort.Port.IsOpen)
+                if (!COM_Port.Port.IsOpen)
                 {
-                    try { SerialPort.Connect(); ConnectButtonText = "Отключиться"; }//Подключение
+                    try { COM_Port.Connect(); ConnectButtonText = "Отключиться"; COM_Port.SaveParameters(COM_Port.Parameters); }//Подключение
                     catch(Exception ex) {  }
                 }
                 else
                 {
-                    SerialPort.Disonnect();//Отключение
+                    COM_Port.Disonnect();//Отключение
                     ConnectButtonText = "Подключиться";
                 }
                 cmdsRaiseCanExecuteChanged();
@@ -51,32 +83,22 @@ namespace BLE_SpeedTest.ViewModels
             cmdWriteText = new RelayCommand(() =>
             {
                 Write();
-            }, () => SerialPort.Port.IsOpen);
-            //Макрос №1
-            cmdWriteMacro1 = new RelayCommand(() =>
-            {
-                byte[] buf = new byte[SerialPort.packSize];
-                for (int i = 0; i < buf.Length; i++)
-                {
-                    buf[i] = (byte)i;
-                }
-                SerialPort.start = DateTime.Now;
-                SerialPort.Port.Write(buf, 0, buf.Length);
-            }, () => SerialPort.Port.IsOpen);
+            }, () => COM_Port.Port.IsOpen);
+
             //Очистка входящего окна
             cmdZeroing = new RelayCommand(() =>
             {
-                SerialPort.Data = String.Empty;
-                for (int i = 0; i < SerialPort.RxData.Length; i++)
+                COM_Port.Data = String.Empty;
+                for (int i = 0; i < COM_Port.RxData.Length; i++)
                 {
-                    SerialPort.RxData[i] = 0;
+                    COM_Port.RxData[i] = 0;
                 }
             });
 
             cmdKeyDown = new Command<object>((a) =>
             {
                 var key = ((KeyEventArgs)a).Key;
-                if (SerialPort.Port.IsOpen)
+                if (COM_Port.Port.IsOpen)
                 {
                     if (key == Key.Enter)
                     {
@@ -94,11 +116,11 @@ namespace BLE_SpeedTest.ViewModels
                         if (TxStackCounter <= -1)
                         {
                             TxStackCounter = -1;
-                            SerialPort.TxData = String.Empty;
+                            COM_Port.TxData = String.Empty;
                         }
                         else
                         if (TxStack.Count > 0)
-                            SerialPort.TxData = TxStack[TxStack.Count - TxStackCounter - 1];
+                            COM_Port.TxData = TxStack[TxStack.Count - TxStackCounter - 1];
                     }
 
                 }
@@ -107,25 +129,23 @@ namespace BLE_SpeedTest.ViewModels
 
         public RelayCommand cmdConnect { get; set; }
         public RelayCommand cmdWriteText { get; set; }
-        public RelayCommand cmdWriteMacro1 { get; set; }
         public RelayCommand cmdZeroing { get; set; }
         public Command cmdKeyDown { get; set; }
 
         void cmdsRaiseCanExecuteChanged()
         {
-            cmdConnect.RaiseCanExecuteChanged();
-            cmdWriteText.RaiseCanExecuteChanged();
-            cmdWriteMacro1.RaiseCanExecuteChanged();
+            cmdConnect?.RaiseCanExecuteChanged();
+            cmdWriteText?.RaiseCanExecuteChanged();
         }
 
         void Write()
         {
-            if (String.Compare(SerialPort.TxData, "$$$") != 0)
-                SerialPort.Port.Write(SerialPort.TxData + "\r");
+            if (String.Compare(COM_Port.TxData, "$$$") != 0)
+                COM_Port.Port.Write(COM_Port.TxData + "\r");
             else
-                SerialPort.Port.Write(SerialPort.TxData);
-            TxStack.Add(SerialPort.TxData);
-            SerialPort.TxData = String.Empty;
+                COM_Port.Port.Write(COM_Port.TxData);
+            TxStack.Add(COM_Port.TxData);
+            COM_Port.TxData = String.Empty;
             TxStackCounter = -1;
         }
     }

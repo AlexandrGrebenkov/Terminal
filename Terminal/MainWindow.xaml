@@ -24,13 +24,14 @@
             <RowDefinition Height="32"/>
             <RowDefinition />
             <RowDefinition Height="32"/>
-            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <ComboBox Width="100" IsEditable="False" Margin="2" VerticalContentAlignment="Center"
-                      ItemsSource="{Binding SerialPort.PortNames}" SelectedItem="{Binding SerialPort.Name}" SelectedIndex="{Binding SerialPort.SelectedIndex}"/>
-            <TextBox Width="60" Margin="2" Text="{Binding SerialPort.BaudRate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
-            <ComboBox Width="40" IsEditable="False" VerticalContentAlignment="Center" Margin="2" SelectedItem="{Binding SerialPort.DataBits}" SelectedIndex="3">
+                      ItemsSource="{Binding PortNames}" SelectedItem="{Binding COM_Port.Parameters.PortName}"
+                      SelectedIndex="{Binding SelectedIndex}"/>
+            <TextBox Width="60" Margin="2" Text="{Binding COM_Port.Parameters.BaudRate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+            <ComboBox Width="40" IsEditable="False" VerticalContentAlignment="Center" Margin="2" 
+                      SelectedItem="{Binding COM_Port.Parameters.DataBits}" SelectedIndex="3">
                 <sys:Int32>5</sys:Int32>
                 <sys:Int32>6</sys:Int32>
                 <sys:Int32>7</sys:Int32>
@@ -39,27 +40,23 @@
             <Button Content="{Binding ConnectButtonText}" Command="{Binding cmdConnect}"/>
             
         </StackPanel>
-        <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding SerialPort.Data}" TextWrapping="Wrap"/>
+        <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding COM_Port.Data}" TextWrapping="Wrap"/>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding SerialPort.TxData, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" >
+            <TextBox BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding COM_Port.TxData, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <h:EventToCommand Command="{Binding cmdKeyDown}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </TextBox>
-            
+
             <Button Content="Отправить" Grid.Column="1" Command="{Binding cmdWriteText}"/>
             <Button Content="Очистить Rx" Grid.Column="2" Command="{Binding cmdZeroing}" ToolTip="Очистка поля приёма"/>
         </Grid>
-        <StackPanel Grid.Row="3" Orientation="Horizontal">
-            <Button Content="1" Command="{Binding cmdWriteMacro1}"/>
-            <TextBlock Text="{Binding SerialPort.Speed, StringFormat=H}" VerticalAlignment="Center"/>
-        </StackPanel>
     </Grid>
 </Window>
