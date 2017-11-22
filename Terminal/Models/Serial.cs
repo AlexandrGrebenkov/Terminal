@@ -86,7 +86,7 @@ namespace BLE_SpeedTest.Models
         Action kickoffRead = null;
         public void Connect()
         {
-            Encoding windows1251 = Encoding.GetEncoding("Windows-1251");
+            Encoding windows1251 = Encoding.GetEncoding("ASCII");//Windows-1251
             Port.PortName = Name;
             Port.BaudRate = BaudRate;
             Port.Parity = Parity.None;
@@ -100,19 +100,12 @@ namespace BLE_SpeedTest.Models
                 try
                 {
                     int count = Port.BaseStream.EndRead(ar);
-                    byte[] dst = new byte[count];
-                    if (RxData[0] == 0xAA)
-                    {
-                        stop = DateTime.Now;
-                        TimeSpan t = stop - start;
-                        Speed = ((double)packSize / t.Milliseconds) * 1000.0 / 1024;
-                    }
 
                     Data += windows1251.GetString(RxData, 0, count);
                 }
                 catch (Exception exception)
                 {
-
+                    Data += String.Format("------Rx Exception:------ Time: {0} \r\n{1}", DateTime.Now, exception.Message);
                 }
                 kickoffRead?.Invoke();
             }, null)); kickoffRead?.Invoke();

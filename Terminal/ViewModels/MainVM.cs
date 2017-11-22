@@ -121,7 +121,7 @@ namespace BLE_SpeedTest.ViewModels
         void Write()
         {
             if (String.Compare(SerialPort.TxData, "$$$") != 0)
-                SerialPort.Port.Write(SerialPort.TxData + "\n");
+                SerialPort.Port.Write(SerialPort.TxData + "\r");
             else
                 SerialPort.Port.Write(SerialPort.TxData);
             TxStack.Add(SerialPort.TxData);
