@@ -1,26 +1,26 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
-using System.Xml.Serialization;
 using Helpers;
+using Terminal.Models;
 
-namespace Terminal.Models
+namespace Terminal.Service
 {
-    public class Serial : BaseDataObject
+    public class Serial : BaseDataObject, ISerial
     {
         /// <summary>COM-Порт</summary>
-        public SerialPort Port = new SerialPort();
+        SerialPort port;
 
-        public bool IsConnected => Port.IsOpen;
+        public bool IsConnected => port?.IsOpen ?? false;
 
-        byte[] RxData = new byte[2000];
+        readonly byte[] rxData = new byte[2000];
 
         Action kickoffRead = null;
         public void Connect(SerialParameters parameters, Action<string> errorHandler = null)
         {
             // Настраиваем порт
-            Port = new SerialPort
+            port = new SerialPort
             {
                 PortName = parameters.PortName,
                 BaudRate = parameters.BaudRate,
@@ -30,7 +30,7 @@ namespace Terminal.Models
                 Handshake = parameters.Handshake
             };
             // Открываем порт
-            try { Port.Open(); }
+            try { port.Open(); }
             catch (Exception ex)
             {
                 errorHandler?.Invoke($"Ошибка открытия порта: {ex.Message}");
@@ -40,14 +40,13 @@ namespace Terminal.Models
             ConnectionChanged?.Invoke(true);
 
             // Настраиваем приём данных
-            IAsyncResult recv_result;
-            Encoding DataEncoder = Encoding.GetEncoding("ASCII");   // Windows-1251
-            kickoffRead = (() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
+            var dataEncoder = Encoding.GetEncoding("ASCII");   // Windows-1251
+            kickoffRead = (() => port.BaseStream.BeginRead(rxData, 0, rxData.Length, delegate (IAsyncResult ar)
             {
                 try
                 {
-                    int count = Port.BaseStream.EndRead(ar);
-                    DataReceived?.Invoke(DataEncoder.GetString(RxData, 0, count));
+                    var count = port.BaseStream.EndRead(ar);
+                    DataReceived?.Invoke(dataEncoder.GetString(rxData, 0, count));
                 }
                 catch (Exception exception)
                 {
@@ -62,7 +61,7 @@ namespace Terminal.Models
         {
             try
             {
-                Port.Write(data);
+                port.Write(data);
             }
             catch (Exception ex)
             {
@@ -72,8 +71,8 @@ namespace Terminal.Models
 
         public void ClearRx()
         {
-            for (int i = 0; i < RxData.Length; i++)
-                RxData[i] = 0;
+            for (int i = 0; i < rxData.Length; i++)
+                rxData[i] = 0;
         }
 
         /// <summary>Отключение (Закрытие порта)</summary>
@@ -84,7 +83,7 @@ namespace Terminal.Models
                 //Port.DiscardOutBuffer();
                 //Port.BaseStream.EndRead(recv_result);
                 kickoffRead = null;
-                Port.Close();
+                port.Close();
                 ConnectionChanged?.Invoke(false);
             }
             catch (Exception ex)
@@ -92,6 +91,8 @@ namespace Terminal.Models
                 errorHandler?.Invoke($"Ошибка закрытия порта: {ex.Message}");
             }
         }
+
+        public string[] PortNames => SerialPort.GetPortNames();
 
         /// <summary>Событие изменения состояния подключения порта</summary>
         public event Action<bool> ConnectionChanged;

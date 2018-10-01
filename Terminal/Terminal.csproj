@@ -72,6 +72,7 @@
     <Compile Include="Models\SerialParameters.cs" />
     <Compile Include="Service\FileWorker.cs" />
     <Compile Include="Service\IFileWorker.cs" />
+    <Compile Include="Service\ISerial.cs" />
     <Compile Include="ViewModels\MainVM.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -87,7 +88,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Serial.cs" />
+    <Compile Include="Service\Serial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

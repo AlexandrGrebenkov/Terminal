@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Windows.Input;
 using Helpers;
 using Terminal.Models;
@@ -11,6 +10,7 @@ namespace Terminal.ViewModels
     public class MainVM : BaseViewModel
     {
         IFileWorker fileWorker = new FileWorker();
+        ISerial serial = new Serial();
 
         string[] portNames;
         /// <summary>Список доступных портов в системе</summary>
@@ -35,8 +35,6 @@ namespace Terminal.ViewModels
             get { return _Parameters; }
             set { SetProperty(ref _Parameters, value); }
         }
-
-        public Serial COM_Port { get; set; } = new Serial();
 
         string _Data;
         /// <summary></summary>
@@ -68,51 +66,51 @@ namespace Terminal.ViewModels
 
         public MainVM()
         {
-            PortNames = SerialPort.GetPortNames(); //Получаем список доступных портов
+            PortNames = serial.PortNames; //Получаем список доступных портов
             SelectedIndex = PortNames.Length - 1; //Выбираем последний из них
 
             //Устанавливаем стартовые значения параметров порта
             Parameters = fileWorker.LoadSettings() ?? SerialParameters.Default;
 
-            COM_Port.ConnectionChanged += status =>
+            serial.ConnectionChanged += status =>
             {
                 IsConnected = status;
                 cmdsRaiseCanExecuteChanged();
             };
 
-            COM_Port.DataReceived += data =>
+            serial.DataReceived += data =>
             {
                 Data += data;
             };
 
             cmdConnect = new RelayCommand(() =>
             {
-                if (!COM_Port.IsConnected)
+                if (!serial.IsConnected)
                 {
-                    COM_Port.Connect(Parameters, error => Data += error);
+                    serial.Connect(Parameters, error => Data += error);
                     fileWorker.SaveSettings(Parameters, error => Data += error); //Подключение
                 }
                 else
-                    COM_Port.Disonnect(error => Data += error);//Отключение
+                    serial.Disonnect(error => Data += error);//Отключение
             });
 
             //Отправка из текста из TextBox
             cmdWriteText = new RelayCommand(() =>
             {
                 Write();
-            }, () => COM_Port.IsConnected);
+            }, () => serial.IsConnected);
 
             //Очистка входящего окна
             cmdZeroing = new RelayCommand(() =>
             {
                 Data = string.Empty;
-                COM_Port.ClearRx();
+                serial.ClearRx();
             });
 
             cmdKeyDown = new Command<object>((a) =>
             {
                 var key = ((KeyEventArgs)a).Key;
-                if (!COM_Port.IsConnected) return;
+                if (!serial.IsConnected) return;
                 switch (key)
                 {
                     case Key.Enter:
@@ -155,7 +153,7 @@ namespace Terminal.ViewModels
         {
             var tx = string.Empty;
             tx = string.Compare(TxData, "$$$") != 0 ? $"{TxData}\r" : $"{TxData}";
-            COM_Port.Write(tx);
+            serial.Write(tx);
             Data += tx;
 
             TxStack.Add(TxData);
