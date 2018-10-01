@@ -37,8 +37,26 @@
                 <sys:Int32>7</sys:Int32>
                 <sys:Int32>8</sys:Int32>
             </ComboBox>
-            <Button Content="{Binding ConnectButtonText}" Command="{Binding cmdConnect}"/>
-            
+            <Button Command="{Binding cmdConnect}">
+                <Button.Style>                    
+                    <Style TargetType="Button">
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Style.Triggers>
+                            <!--Подключен-->
+                            <DataTrigger Binding="{Binding IsConnected}" 
+                                 Value="true">
+                                <Setter Property="Content" Value="Отключиться" />
+                            </DataTrigger>
+                            <!--Отключен-->
+                            <DataTrigger Binding="{Binding IsConnected}" 
+                                 Value="false">
+                                <Setter Property="Content" Value="Подключиться" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
         </StackPanel>
         <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding COM_Port.Data}" TextWrapping="Wrap"/>
         <Grid Grid.Row="2">

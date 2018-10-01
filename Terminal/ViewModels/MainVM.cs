@@ -31,12 +31,12 @@ namespace Terminal.ViewModels
         List<string> TxStack = new List<string>();
         int TxStackCounter = -1;
 
-        /// <summary>Текст кнопки (Подключиться/Отключиться)</summary>
-        string connectButtonText;
-        public string ConnectButtonText
+        bool _IsConnected;
+        /// <summary>Статус подключения порта</summary>
+        public bool IsConnected
         {
-            get { return connectButtonText; }
-            set { SetProperty(ref connectButtonText, value); }
+            get { return _IsConnected; }
+            set { SetProperty(ref _IsConnected, value); }
         }
 
         public MainVM()
@@ -47,18 +47,17 @@ namespace Terminal.ViewModels
             //Устанавливаем стартовые значения параметров порта
             COM_Port.Parameters = COM_Port.LoadParameters();
 
-            ConnectButtonText = "Подключиться";
             cmdConnect = new RelayCommand(() =>
             {
                 if (!COM_Port.Port.IsOpen)
                 {
-                    try { COM_Port.Connect(); ConnectButtonText = "Отключиться"; COM_Port.SaveParameters(COM_Port.Parameters); }//Подключение
+                    try { COM_Port.Connect(); IsConnected = true; COM_Port.SaveParameters(COM_Port.Parameters); }//Подключение
                     catch (Exception ex) { }
                 }
                 else
                 {
                     COM_Port.Disonnect();//Отключение
-                    ConnectButtonText = "Подключиться";
+                    IsConnected = false;
                 }
                 cmdsRaiseCanExecuteChanged();
             });
