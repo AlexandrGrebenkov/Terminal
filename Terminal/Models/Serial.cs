@@ -65,7 +65,7 @@ namespace BLE_SpeedTest.Models
 
             //Настраиваем приём данных
             Encoding DataEncoder = Encoding.GetEncoding("ASCII");//Windows-1251
-            kickoffRead = (Action)(() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
+            kickoffRead = (() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
             {
                 try
                 {

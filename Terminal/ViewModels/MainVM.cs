@@ -54,14 +54,6 @@ namespace BLE_SpeedTest.ViewModels
 
             //Устанавливаем стартовые значения параметров порта
             COM_Port.Parameters = COM_Port.LoadParameters();
-                /*new SerialParameters()
-            {
-                BaudRate = 115200,
-                DataBits = 8,
-                Parity = Parity.None,
-                Handshake = Handshake.None,
-                StopBits = StopBits.One
-            };*/
 
             ConnectButtonText = "Подключиться";
             cmdConnect = new RelayCommand(() =>
@@ -140,13 +132,18 @@ namespace BLE_SpeedTest.ViewModels
 
         void Write()
         {
+            string Tx = String.Empty;
             if (String.Compare(COM_Port.TxData, "$$$") != 0)
-                COM_Port.Port.Write(COM_Port.TxData + "\r");
+                Tx = $"{COM_Port.TxData}\r";
             else
-                COM_Port.Port.Write(COM_Port.TxData);
+                Tx = $"{COM_Port.TxData}";
+            COM_Port.Port.Write(Tx);
+            COM_Port.Data += Tx;
+
             TxStack.Add(COM_Port.TxData);
             COM_Port.TxData = String.Empty;
             TxStackCounter = -1;
+            
         }
     }
 }
