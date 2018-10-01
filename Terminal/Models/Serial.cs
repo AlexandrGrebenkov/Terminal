@@ -9,26 +9,10 @@ namespace Terminal.Models
 {
     public class Serial : BaseDataObject
     {
-        SerialParameters parameters;
-        /// <summary>Параметры COM-порта</summary>
-        public SerialParameters Parameters
-        {
-            get { return parameters; }
-            set { SetProperty(ref parameters, value); }
-        }
-
         /// <summary>COM-Порт</summary>
         public SerialPort Port = new SerialPort();
-        IAsyncResult recv_result;
 
-
-        string data;
-        /// <summary>Полученные данные (Отображаемая на UI строка)</summary>
-        public string Data
-        {
-            get { return data; }
-            set { SetProperty(ref data, value); }
-        }
+        public bool IsConnected => Port.IsOpen;
 
         string txData;
         /// <summary>Отправленные данные</summary>
@@ -46,77 +30,80 @@ namespace Terminal.Models
         }
 
         Action kickoffRead = null;
-        public void Connect()
+        public void Connect(SerialParameters parameters, Action<string> errorHandler = null)
         {
             // Настраиваем порт
-            Port.PortName = Parameters.PortName;
-            Port.BaudRate = Parameters.BaudRate;
-            Port.Parity = Parameters.Parity;
-            Port.DataBits = Parameters.DataBits;
-            Port.StopBits = Parameters.StopBits;
-            Port.Handshake = Parameters.Handshake;
+            Port = new SerialPort
+            {
+                PortName = parameters.PortName,
+                BaudRate = parameters.BaudRate,
+                Parity = parameters.Parity,
+                DataBits = parameters.DataBits,
+                StopBits = parameters.StopBits,
+                Handshake = parameters.Handshake
+            };
             // Открываем порт
-            Port.Open();
+            try { Port.Open(); }
+            catch (Exception ex)
+            {
+                errorHandler?.Invoke($"Ошибка открытия порта: {ex.Message}");
+                ConnectionChanged?.Invoke(false);
+                return;
+            }
+            ConnectionChanged?.Invoke(true);
 
             // Настраиваем приём данных
+            IAsyncResult recv_result;
             Encoding DataEncoder = Encoding.GetEncoding("ASCII");   // Windows-1251
             kickoffRead = (() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
             {
                 try
                 {
                     int count = Port.BaseStream.EndRead(ar);
-                    Data += DataEncoder.GetString(RxData, 0, count);
+                    DataReceived?.Invoke(DataEncoder.GetString(RxData, 0, count));
                 }
                 catch (Exception exception)
                 {
-                    Data += String.Format("------Rx Exception:------\r\nTime: {0} \r\n{1}", DateTime.Now, exception.Message);
+                    errorHandler?.Invoke($"------Rx Exception:------\r\nTime: {DateTime.Now} \r\n{exception.Message}");
                 }
                 kickoffRead?.Invoke();
             }, null));
             kickoffRead?.Invoke();
         }
 
-        /// <summary>Отключение (Закрытие порта)</summary>
-        public void Disonnect()
+        public void Write(string data, Action<string> errorHandler = null)
         {
-            //Port.DiscardOutBuffer();
-            //Port.BaseStream.EndRead(recv_result);
-            kickoffRead = null;
-            Port.Close();
-        }
-
-        public void SaveParameters(SerialParameters param)
-        {
-            using (var writer = new StreamWriter("Parameters.xml"))
-            {
-                var xs = new XmlSerializer(typeof(SerialParameters));
-                xs.Serialize(writer, param);
-            }
-        }
-
-        public SerialParameters LoadParameters()
-        {
-            var param = new SerialParameters();
             try
             {
-                using (var reader = new StreamReader("Parameters.xml"))
-                {
-                    var xs = new XmlSerializer(typeof(SerialParameters));
-                    param = (SerialParameters)xs.Deserialize(reader);
-                }
+                Port.Write(data);
             }
             catch (Exception ex)
             {
-                param = new SerialParameters()
-                {
-                    BaudRate = 115200,
-                    DataBits = 8,
-                    Parity = Parity.None,
-                    Handshake = Handshake.None,
-                    StopBits = StopBits.One
-                };
+                errorHandler?.Invoke($"Ошибка отправки данных: {ex.Message}");
             }
-            return param;
         }
+
+        /// <summary>Отключение (Закрытие порта)</summary>
+        public void Disonnect(Action<string> errorHandler = null)
+        {
+            try
+            {
+                //Port.DiscardOutBuffer();
+                //Port.BaseStream.EndRead(recv_result);
+                kickoffRead = null;
+                Port.Close();
+                ConnectionChanged?.Invoke(false);
+            }
+            catch (Exception ex)
+            {
+                errorHandler?.Invoke($"Ошибка закрытия порта: {ex.Message}");
+            }
+        }
+
+        /// <summary>Событие изменения состояния подключения порта</summary>
+        public event Action<bool> ConnectionChanged;
+
+        /// <summary>Событие приёма новых данных</summary>
+        public event Action<string> DataReceived;
     }
 }

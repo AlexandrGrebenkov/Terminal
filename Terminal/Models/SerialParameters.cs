@@ -52,5 +52,15 @@ namespace Terminal.Models
             get { return handshake; }
             set { SetProperty(ref handshake, value); }
         }
+
+        public static SerialParameters Default => new SerialParameters
+        {
+            PortName = "COM1",
+            baudRate = 9600,
+            dataBits = 8,
+            parity = Parity.None,
+            stopBits = StopBits.One,
+            handshake = Handshake.None
+        };        
     }
 }

@@ -27,11 +27,11 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <ComboBox Width="100" IsEditable="False" Margin="2" VerticalContentAlignment="Center"
-                      ItemsSource="{Binding PortNames}" SelectedItem="{Binding COM_Port.Parameters.PortName}"
+                      ItemsSource="{Binding PortNames}" SelectedItem="{Binding Parameters.PortName}"
                       SelectedIndex="{Binding SelectedIndex}"/>
-            <TextBox Width="60" Margin="2" Text="{Binding COM_Port.Parameters.BaudRate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
+            <TextBox Width="60" Margin="2" Text="{Binding Parameters.BaudRate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Right"/>
             <ComboBox Width="40" IsEditable="False" VerticalContentAlignment="Center" Margin="2" 
-                      SelectedItem="{Binding COM_Port.Parameters.DataBits}" SelectedIndex="3">
+                      SelectedItem="{Binding Parameters.DataBits}" SelectedIndex="3">
                 <sys:Int32>5</sys:Int32>
                 <sys:Int32>6</sys:Int32>
                 <sys:Int32>7</sys:Int32>
@@ -58,7 +58,7 @@
             </Button>
 
         </StackPanel>
-        <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding COM_Port.Data}" TextWrapping="Wrap"/>
+        <TextBox Grid.Row="1" BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding Data}" TextWrapping="Wrap"/>
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
