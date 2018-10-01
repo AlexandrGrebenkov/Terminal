@@ -9,27 +9,21 @@ namespace BLE_SpeedTest.Models
 {
     public class Serial : BaseDataObject
     {
-        /// <summary>
-        /// Параметры COM-порта
-        /// </summary>
         SerialParameters parameters;
+        /// <summary>Параметры COM-порта</summary>
         public SerialParameters Parameters
         {
             get { return parameters; }
             set { SetProperty(ref parameters, value); }
         }
 
-        /// <summary>
-        /// COM-Порт
-        /// </summary>
+        /// <summary>COM-Порт</summary>
         public SerialPort Port = new SerialPort();
         IAsyncResult recv_result;
 
 
-        /// <summary>
-        /// Полученные данные (Отображаемая на UI строка)
-        /// </summary>
         string data;
+        /// <summary>Полученные данные (Отображаемая на UI строка)</summary>
         public string Data
         {
             get { return data; }
@@ -37,6 +31,7 @@ namespace BLE_SpeedTest.Models
         }
 
         string txData;
+        /// <summary>Отправленные данные</summary>
         public string TxData
         {
             get { return txData; }
@@ -53,18 +48,18 @@ namespace BLE_SpeedTest.Models
         Action kickoffRead = null;
         public void Connect()
         {
-            //Настраиваем порт
+            // Настраиваем порт
             Port.PortName = Parameters.PortName;
             Port.BaudRate = Parameters.BaudRate;
             Port.Parity = Parameters.Parity;
             Port.DataBits = Parameters.DataBits;
             Port.StopBits = Parameters.StopBits;
             Port.Handshake = Parameters.Handshake;
-            //Открываем порт
+            // Открываем порт
             Port.Open();
 
-            //Настраиваем приём данных
-            Encoding DataEncoder = Encoding.GetEncoding("ASCII");//Windows-1251
+            // Настраиваем приём данных
+            Encoding DataEncoder = Encoding.GetEncoding("ASCII");   // Windows-1251
             kickoffRead = (() => recv_result = Port.BaseStream.BeginRead(RxData, 0, RxData.Length, delegate (IAsyncResult ar)
             {
                 try
@@ -81,9 +76,7 @@ namespace BLE_SpeedTest.Models
             kickoffRead?.Invoke();
         }
 
-        /// <summary>
-        /// Отключение (Закрытие порта)
-        /// </summary>
+        /// <summary>Отключение (Закрытие порта)</summary>
         public void Disonnect()
         {
             //Port.DiscardOutBuffer();

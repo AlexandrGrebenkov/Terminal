@@ -11,20 +11,16 @@ namespace BLE_SpeedTest.ViewModels
 {
     public class MainVM : BaseViewModel
     {
-        /// <summary>
-        /// Список доступных портов в системе
-        /// </summary>
         string[] portNames;
+        /// <summary>Список доступных портов в системе</summary>
         public string[] PortNames
         {
             get { return portNames; }
             set { SetProperty(ref portNames, value); }
         }
 
-        /// <summary>
-        /// Выбранный порт
-        /// </summary>
         int selectedIndex;
+        /// <summary>Выбранный порт</summary>
         public int SelectedIndex
         {
             get { return selectedIndex; }
@@ -33,13 +29,11 @@ namespace BLE_SpeedTest.ViewModels
 
         public Serial COM_Port { get; set; } = new Serial();
 
-        //История отправленных сообщений
+        /// <summary>История отправленных сообщений</summary>
         List<string> TxStack = new List<string>();
         int TxStackCounter = -1;
 
-        /// <summary>
-        /// Тест кнопки (Подключиться/Отключиться)
-        /// </summary>
+        /// <summary>Текст кнопки (Подключиться/Отключиться)</summary>
         string connectButtonText;
         public string ConnectButtonText
         {
@@ -61,7 +55,7 @@ namespace BLE_SpeedTest.ViewModels
                 if (!COM_Port.Port.IsOpen)
                 {
                     try { COM_Port.Connect(); ConnectButtonText = "Отключиться"; COM_Port.SaveParameters(COM_Port.Parameters); }//Подключение
-                    catch(Exception ex) {  }
+                    catch (Exception ex) { }
                 }
                 else
                 {
@@ -114,7 +108,6 @@ namespace BLE_SpeedTest.ViewModels
                         if (TxStack.Count > 0)
                             COM_Port.TxData = TxStack[TxStack.Count - TxStackCounter - 1];
                     }
-
                 }
             });
         }
@@ -143,7 +136,6 @@ namespace BLE_SpeedTest.ViewModels
             TxStack.Add(COM_Port.TxData);
             COM_Port.TxData = String.Empty;
             TxStackCounter = -1;
-            
         }
     }
 }
