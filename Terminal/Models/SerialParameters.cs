@@ -1,7 +1,7 @@
-﻿using Helpers;
-using System.IO.Ports;
+﻿using System.IO.Ports;
+using Helpers;
 
-namespace BLE_SpeedTest.Models
+namespace Terminal.Models
 {
     public class SerialParameters : BaseDataObject
     {

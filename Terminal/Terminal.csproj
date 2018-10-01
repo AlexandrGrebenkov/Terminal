@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{49931BA5-BD77-4C21-8EC4-5CBF8B7CEC79}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>BLE_SpeedTest</RootNamespace>
+    <RootNamespace>Terminal</RootNamespace>
     <AssemblyName>Terminal</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -70,6 +70,7 @@
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\StringParsers.cs" />
     <Compile Include="Models\SerialParameters.cs" />
+    <Compile Include="Service\IFileWorker.cs" />
     <Compile Include="ViewModels\MainVM.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

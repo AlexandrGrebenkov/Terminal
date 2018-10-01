@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Helpers;
-using BLE_SpeedTest.Models;
 using System.IO.Ports;
 using System.Windows.Input;
+using Helpers;
+using Terminal.Models;
 
-namespace BLE_SpeedTest.ViewModels
+namespace Terminal.ViewModels
 {
     public class MainVM : BaseViewModel
     {

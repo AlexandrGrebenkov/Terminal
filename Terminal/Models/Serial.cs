@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Text;
-using Helpers;
-using System.IO.Ports;
 using System.IO;
+using System.IO.Ports;
+using System.Text;
 using System.Xml.Serialization;
+using Helpers;
 
-namespace BLE_SpeedTest.Models
+namespace Terminal.Models
 {
     public class Serial : BaseDataObject
     {
