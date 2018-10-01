@@ -46,6 +46,14 @@ namespace Terminal.ViewModels
             set { SetProperty(ref _Data, value); }
         }
 
+        string _TxData;
+        /// <summary></summary>
+        public string TxData
+        {
+            get { return _TxData; }
+            set { SetProperty(ref _TxData, value); }
+        }
+
         /// <summary>История отправленных сообщений</summary>
         List<string> TxStack = new List<string>();
         int _txStackCounter = -1;
@@ -98,10 +106,7 @@ namespace Terminal.ViewModels
             cmdZeroing = new RelayCommand(() =>
             {
                 Data = string.Empty;
-                for (int i = 0; i < COM_Port.RxData.Length; i++)
-                {
-                    COM_Port.RxData[i] = 0;
-                }
+                COM_Port.ClearRx();
             });
 
             cmdKeyDown = new Command<object>((a) =>
@@ -124,11 +129,11 @@ namespace Terminal.ViewModels
                         if (_txStackCounter <= -1)
                         {
                             _txStackCounter = -1;
-                            COM_Port.TxData = string.Empty;
+                            TxData = string.Empty;
                         }
                         else
                         if (TxStack.Count > 0)
-                            COM_Port.TxData = TxStack[TxStack.Count - _txStackCounter - 1];
+                            TxData = TxStack[TxStack.Count - _txStackCounter - 1];
 
                         break;
                 }
@@ -149,12 +154,12 @@ namespace Terminal.ViewModels
         void Write()
         {
             var tx = string.Empty;
-            tx = string.Compare(COM_Port.TxData, "$$$") != 0 ? $"{COM_Port.TxData}\r" : $"{COM_Port.TxData}";
+            tx = string.Compare(TxData, "$$$") != 0 ? $"{TxData}\r" : $"{TxData}";
             COM_Port.Write(tx);
             Data += tx;
 
-            TxStack.Add(COM_Port.TxData);
-            COM_Port.TxData = string.Empty;
+            TxStack.Add(TxData);
+            TxData = string.Empty;
             _txStackCounter = -1;
         }
     }

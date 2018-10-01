@@ -65,7 +65,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding COM_Port.TxData, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" >
+            <TextBox BorderThickness="1" BorderBrush="#333333" Margin="2" Text="{Binding TxData, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <h:EventToCommand Command="{Binding cmdKeyDown}"/>

@@ -14,20 +14,7 @@ namespace Terminal.Models
 
         public bool IsConnected => Port.IsOpen;
 
-        string txData;
-        /// <summary>Отправленные данные</summary>
-        public string TxData
-        {
-            get { return txData; }
-            set { SetProperty(ref txData, value); }
-        }
-
-        byte[] rxData = new byte[2000];
-        public byte[] RxData
-        {
-            get { return rxData; }
-            set { SetProperty(ref rxData, value); }
-        }
+        byte[] RxData = new byte[2000];
 
         Action kickoffRead = null;
         public void Connect(SerialParameters parameters, Action<string> errorHandler = null)
@@ -81,6 +68,12 @@ namespace Terminal.Models
             {
                 errorHandler?.Invoke($"Ошибка отправки данных: {ex.Message}");
             }
+        }
+
+        public void ClearRx()
+        {
+            for (int i = 0; i < RxData.Length; i++)
+                RxData[i] = 0;
         }
 
         /// <summary>Отключение (Закрытие порта)</summary>
